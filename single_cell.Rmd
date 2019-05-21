@@ -1,0 +1,139 @@
+---
+title: "single_cell"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Seurat)
+library(dplyr)
+library(Matrix)
+
+#KS OBJECT ( 7 DAYS KETOROLAC)
+load("KS.Robj", verbose=TRUE)
+
+
+#tSNE
+KS <- RunTSNE(object = KS, dims.use = 1:13, do.fast = TRUE)
+TSNEPlot(object = KS,do.label=TRUE)
+
+
+ks.markers <- FindAllMarkers(object = KS , min.pct = 0.25, thresh.use = 0.25)
+
+#heatmap of TOP 5 genes 
+top5_ks <- ks.markers %>% group_by(cluster) %>% top_n(5, avg_logFC)
+#pdf(file="KS_heatmap_top_5.pdf",width=20,height=20)
+DoHeatmap(object = KS, genes.use = top5_ks$gene,  disp.min = -1,
+          disp.max = 1 ,slim.col.label = TRUE, remove.key = TRUE, col.low="green",
+          col.mid = "black",col.high="red",group.cex = 20,
+          group.spacing = 0.15,cex.col = 20,
+          cex.row = 25)
+#dev.off()
+
+
+#heatmap of  TOP 10 genes 
+top10_ks <- ks.markers %>% group_by(cluster) %>% top_n(10, avg_logFC)
+#pdf(file="KS_heatmap_top_10.pdf",width=30,height=30)
+DoHeatmap(object = KS, genes.use = top10_ks$gene,  disp.min = -1,
+          disp.max = 1 ,slim.col.label = TRUE, remove.key = TRUE, col.low="green",
+          col.mid = "black",col.high="red",group.cex = 20,
+          group.spacing = 0.15,cex.col = 20,
+          cex.row = 25)
+#dev.off()
+
+
+current.cluster.ids <- c(0, 1, 2, 3, 4, 5,6,7,8,9,10)
+new.cluster.ids <- c("Bcells/Endothelial","Tcells","Bcells/Granulocytes","Bcells/Granulocytes "," ","Dendritic/Granulocytes","Immune Cells","Dendritic","Macrophages","NK/Tcells","Granulocytes ")
+KS@ident <- plyr::mapvalues(x =  KS@ident, from=current.cluster.ids, to = new.cluster.ids)
+#pdf(file="KS_tsne.pdf",width=12,height=10)
+TSNEPlot(object =  KS, do.label = TRUE, pt.size = 1.5,colors.use=c("gold4","darkgreen","goldenrod3","tan3","snow4","tan4","blue","orange","red","darkseagreen","brown"))
+#dev.off()
+
+
+#Violin plots
+#B CELLS
+#nams <- c("Cd79a", "Cd79b","Cd19","Blk")
+#pdf(paste(nams,"_Bcells_Markers_KS.pdf"))
+VlnPlot(object = KS, features.plot = c("Cd79a"))
+VlnPlot(object = KS, features.plot = c("Cd79b"))
+VlnPlot(object = KS, features.plot = c("Cd19"))
+VlnPlot(object = KS, features.plot = c("Blk"))
+#dev.off()
+
+#Featureplot
+#B cells
+#pdf(file="KS_Bcells.pdf",width=10,height=10)
+FeaturePlot(object =KS, features.plot = c("Cd79a","Cd79b","Cd19","Blk"), cols.use = c("grey", "blue"), reduction.use = "tsne")
+#dev.off()
+
+
+
+
+
+#Macrophages
+#nams <- c("Adgre1","Cd163","Cd14","Csf1r","Ccr2")
+#pdf(paste(nams,"_Macrophages_Markers_KS.pdf"))
+VlnPlot(object = KS, features.plot = c("Adgre1"))
+VlnPlot(object = KS, features.plot = c("Cd163"))
+VlnPlot(object = KS, features.plot = c("Cd14"))
+VlnPlot(object = KS, features.plot = c("Csf1r"))
+VlnPlot(object = KS, features.plot = c("Ccr2"))
+#dev.off()
+
+#pdf(file="KS_Macrophages.pdf",width=10,height=10)
+FeaturePlot(object =KS, features.plot = c("Adgre1","Cd163","Cd14","Csf1r","Ccr2"), cols.use = c("grey", "blue"), reduction.use = "tsne")
+#dev.off()
+
+
+
+#Mast cells
+#nams <- c("Kit")
+#pdf(paste(nams,"_Mast_Markers_KS.pdf"))
+#VlnPlot(object = KS, features.plot = c("Fcer1a"))
+VlnPlot(object = KS, features.plot = c("Kit"))
+#VlnPlot(object =KS, features.plot = c("Tpsab1"))
+#dev.off()
+
+
+#pdf(file="KS_Mast.pdf",width=10,height=10)
+FeaturePlot(object =KS, features.plot = c("Kit"), cols.use = c("grey", "blue"), reduction.use = "tsne")
+#dev.off()
+
+
+#Neutrophil
+#nams <- c("Gsr")
+#pdf(paste(nams,"_Neutrophils_Markers_KS.pdf"))
+VlnPlot(object = KS, features.plot = c("Gsr"))
+#dev.off()
+
+
+#pdf(file="KS_Neutrophil.pdf",width=10,height=10)
+FeaturePlot(object =KS, features.plot = c("Gsr"), cols.use = c("grey", "blue"), reduction.use = "tsne")
+#dev.off()
+
+
+
+
+
+#T cells
+#nams <- c("Cd3d","Cd3e","Cd3g","Cd247")
+#pdf(paste(nams,"_Tcells_other_Markers_KS.pdf"))
+VlnPlot(object = KS, features.plot = c("Cd3d"))
+VlnPlot(object = KS, features.plot = c("Cd3e"))
+VlnPlot(object = KS, features.plot = c("Cd3g"))
+VlnPlot(object = KS, features.plot = c("Cd247"))
+#dev.off()
+
+#pdf(file="KS_Tcell_other_markers.pdf",width=10,height=10)
+FeaturePlot(object =KS, features.plot = c("Cd3d","Cd3e","Cd3g","Cd247"), cols.use = c("grey", "blue"), reduction.use = "tsne")
+#dev.off()
+
+
+
+
+
+
